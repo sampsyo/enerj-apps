@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ Copyright 2007 ZXing authors
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<project name="javase" default="build">
+
+    <!-- JSR308 support -->
+    <property environment="env" />
+    <property name="jsr308.dir" value="${env.JSR308}" />
+    <property name="jsr308.bin" value="${env.JSR308}/checkers/binary" />
+    <property name="jsr308.jar" value="${jsr308.bin}/jsr308-all.jar" />
+    <presetdef name="jsr308.javac">
+        <javac fork="yes">
+            <compilerarg line="-J-Xbootclasspath/p:${jsr308.jar}" />
+        </javac>
+    </presetdef>
+
+    <!-- EnerJ checker -->
+    <property name="enerj.jar" value="../../../enerj/build/enerj.jar" />
+    <property name="cfrt.jar" value="../../../checker-runtime/build/cfrt.jar" />
+    <property name="enerj.checker" value="enerj.PrecisionChecker" />
+    <condition property="enerjc.args" value="-Alint=mbstatic" else="-Alint=simulation,mbstatic">
+        <isset property="env.EnerJNoSim" />
+    </condition>
+    <condition property="enerjc.verbose" value="false" else="true">
+        <isset property="env.EnerJNoSim" />
+    </condition>
+    <presetdef name="enerjc">
+        <jsr308.javac verbose="${enerjc.verbose}">
+            <compilerarg line="-Xbootclasspath/a:${cfrt.jar}:${enerj.jar} -processorpath ${cfrt.jar}:${enerj.jar} -processor ${enerj.checker}" />
+            <compilerarg line="${enerjc.args}" />
+        </jsr308.javac>
+    </presetdef>
+
+  <target name="init">
+    <tstamp/>
+    <fail message="Please build 'core' first">
+      <condition>
+        <not>
+          <available file="../core/core.jar" type="file"/>
+        </not>
+      </condition>
+    </fail>
+  </target>
+
+  <target name="build" depends="init">
+    <mkdir dir="build"/>
+    <enerjc srcdir="src"
+           destdir="build"
+           optimize="true"
+           debug="true"
+           deprecation="true">
+      <classpath>
+        <pathelement location="../core/core.jar"/>
+      </classpath>
+    </enerjc>
+    <jar jarfile="javase.jar" basedir="build"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="build"/>
+    <delete file="javase.jar"/>
+  </target>
+
+</project>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="javase" default="build">
+
+    <!-- JSR308 support -->
+    <property environment="env" />
+    <property name="jsr308.dir" value="${env.JSR308}" />
+    <property name="jsr308.bin" value="${env.JSR308}/checkers/binary" />
+    <property name="jsr308.jar" value="${jsr308.bin}/jsr308-all.jar" />
+    <presetdef name="jsr308.javac">
+        <javac fork="yes">
+            <compilerarg line="-J-Xbootclasspath/p:${jsr308.jar}" />
+        </javac>
+    </presetdef>
+
+    <!-- EnerJ checker -->
+    <property name="enerj.jar" value="../../enerj/build/enerj.jar" />
+    <property name="cfrt.jar" value="../../checker-runtime/build/cfrt.jar" />
+    <property name="enerj.checker" value="enerj.PrecisionChecker" />
+    <condition property="enerjc.args" value="-Alint=mbstatic" else="-Alint=mbstatic,simulation">
+        <isset property="env.EnerJNoSim" />
+    </condition>
+    <condition property="enerjc.verbose" value="false" else="true">
+        <isset property="env.EnerJNoSim" />
+    </condition>
+    <presetdef name="enerjc">
+        <jsr308.javac verbose="${enerjc.verbose}">
+            <compilerarg line="-Xbootclasspath/a:${cfrt.jar}:${enerj.jar} -processorpath ${cfrt.jar}:${enerj.jar} -processor ${enerj.checker}" />
+            <compilerarg line="${enerjc.args}" />
+        </jsr308.javac>
+    </presetdef>
+
+  <target name="build">
+    <mkdir dir="build"/>
+    <enerjc srcdir="src"
+           destdir="build"
+           optimize="true"
+           debug="true"
+           deprecation="true">
+    </enerjc>
+    <jar jarfile="jmeint.jar" basedir="build"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="build"/>
+    <delete file="jmeint.jar"/>
+  </target>
+
+</project>
