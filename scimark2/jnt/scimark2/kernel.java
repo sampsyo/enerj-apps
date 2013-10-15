@@ -40,7 +40,7 @@ public class kernel
 		@Approx double G[][] = RandomMatrix(N, N, R);
 
 		int cycles=100;
-		SOR.execute(1.25, (@Approx double [] @Approx [])G, cycles);
+		SOR.execute(1.25, G, cycles);
 		// approx Mflops
 		
 		System.out.print("SOR values: ");
@@ -147,7 +147,7 @@ public class kernel
 		for (int i=0; i<cycles; i++)
 		{
 			CopyMatrix(lu, A);
-			LU.factor((@Approx double [] @Approx [])lu, pivot);
+			LU.factor((@Approx double [][])lu, pivot);
 		}
 
 
@@ -155,7 +155,7 @@ public class kernel
 		@Approx double b[] = RandomVector(N, R);
 		@Approx double x[] = NewVectorCopy(b);
 
-		LU.solve((@Approx double [] @Approx [])lu, pivot, x);
+		LU.solve((@Approx double [][])lu, pivot, x);
 
 		// final double EPS = 1.0e-12;
 		
